@@ -1,18 +1,4 @@
-typedef enum logic [2:0] {
-    DATA,
-    IDLE,
-    START,
-    TERMINATE,
-    FAULT
-} command_type_e;
-
-
-// IEEE Block Type Values Used
-localparam logic [7:0] IDLE_BLOCK      = 8'h1E;
-localparam logic [7:0] START_BLOCK     = 8'h33;
-localparam logic [7:0] TERMINATE_BLOCK = 8'h87;   // Simplified: one terminate format
-localparam logic [7:0] FAULT_BLOCK     = 8'hF0;   // Temporary project-specific value
-
+import ethernet_pkg::*;
 
 module encoder(
 
@@ -23,7 +9,7 @@ module encoder(
     // Input Interface From Testbench
     input  logic           valid_in,     
     input  logic [63:0]    data_in,      
-    input  command_type_e  command_type, 
+    input  logic [2:0]     command_type, 
 
     // Handshake Interface (From Scrambler)
     input  logic           ready,        // Scrambler is ready to accept next block
