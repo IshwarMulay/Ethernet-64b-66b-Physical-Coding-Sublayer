@@ -34,12 +34,11 @@ module descrambler (
         else begin
             valid_out <= 1'b0;
             if(valid_in)begin
-                history_reg <= {history_reg[56:0], scrambled_bit};
-
                 case(bit_count)
                     0:  sync_header[1] <= scrambled_bit;
                     1:  sync_header[0] <= scrambled_bit;
                     default:
+                        history_reg <= {history_reg[56:0], scrambled_bit};
                         recovered_data[65-bit_count] <= descramble_bit;
                 endcase
                 
