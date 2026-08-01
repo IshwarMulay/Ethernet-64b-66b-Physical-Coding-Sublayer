@@ -1,16 +1,41 @@
 package ethernet_pkg;
 
 typedef enum logic [2:0] {
-    DATA,
-    IDLE,
-    START,
-    TERMINATE,
-    FAULT
-} command_type_e;
+    BLK_DATA,
+    BLK_IDLE,
+    BLK_START,
+    BLK_TERMINATE,
+    BLK_ERROR
+} block_type_t;
 
-localparam logic [7:0] IDLE_BLOCK      = 8'h1E;
-localparam logic [7:0] START_BLOCK     = 8'h33;
-localparam logic [7:0] TERMINATE_BLOCK = 8'h87;
-localparam logic [7:0] FAULT_BLOCK     = 8'hF0;
+
+typedef enum logic [2:0] {
+    CH_DATA,
+    CH_IDLE,
+    CH_START,
+    CH_TERM,
+    CH_ERROR,
+    CH_SEQ_OS,
+    CH_UNKNOWN
+} character_t;
+
+//---------------------------------------------------------
+// IEEE Block Type Constants
+//---------------------------------------------------------
+localparam logic [7:0] IDLE_BLOCK_TYPE   = 8'h1E;
+
+localparam logic [7:0] START_BLOCK_TYPE  = 8'h78;
+
+localparam logic [7:0] TERM0_BLOCK_TYPE  = 8'h87;
+localparam logic [7:0] TERM1_BLOCK_TYPE  = 8'h99;
+localparam logic [7:0] TERM2_BLOCK_TYPE  = 8'hAA;
+localparam logic [7:0] TERM3_BLOCK_TYPE  = 8'hB4;
+localparam logic [7:0] TERM4_BLOCK_TYPE  = 8'hCC;
+localparam logic [7:0] TERM5_BLOCK_TYPE  = 8'hD2;
+localparam logic [7:0] TERM6_BLOCK_TYPE  = 8'hE1;
+localparam logic [7:0] TERM7_BLOCK_TYPE  = 8'hFF;
 
 endpackage
+
+
+

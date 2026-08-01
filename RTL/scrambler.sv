@@ -1,134 +1,173 @@
+`timescale 1ns/1ps
+
 module scrambler (
-    input logic clk,
-    input logic rst_n,
 
-    input logic valid_in,
-    input logic [65:0] encoded_data,
+    input  logic clk,
+    input  logic rst_n,
 
-    output logic scrambled_bit,
-    output logic valid_out,
-    output logic ready
+    // FIFO Interface
+    input  logic [65:0] fifo_data,
+    input  logic        fifo_empty,
+
+    output logic        fifo_rd_en,
+
+    // Serial Output
+    output logic        scrambled_bit,
+    output logic        valid_out
 );
-    //Internal Registers
-    // Stores the 66-bit block received from the encoder
+
+
+    //------------------------------------------------
+    // Registers
+    //------------------------------------------------
+
     logic [1:0]  sync_header;
     logic [63:0] shift_reg;
 
-    // Stores the previous scrambled bits (history register)
+    // Previous scrambled data history
     logic [57:0] history_reg;
 
-    logic [6:0]  bit_count;
-    logic scramble_bit_next;
+    logic [6:0] bit_count;
 
-    
-    assign scramble_bit_next = shift_reg[63] ^ history_reg[57] ^ history_reg[38];
 
-    typedef enum logic [1:0] {
+    //------------------------------------------------
+    // FSM
+    //------------------------------------------------
+    typedef enum logic [1:0]
+    {
         IDLE,
-        LOAD,
-        SHIFT,
-        DONE
+        READ_FIFO,
+        SHIFT
     } state_t;
-
     state_t current_state, next_state;
 
-    always_ff @(posedge clk or negedge rst_n) begin
-        if(!rst_n) begin
+    // Scrambler equation
+    logic scramble_bit_next;
+
+    assign scramble_bit_next =
+                shift_reg[63] ^
+                history_reg[57] ^
+                history_reg[38];
+
+    // State Register
+    always_ff @(posedge clk or negedge rst_n)
+    begin
+        if(!rst_n)
             current_state <= IDLE;
-        end
-        else begin
+        else
             current_state <= next_state;
-        end
     end
 
-    always_comb begin
+    // Next State Logic
+    always_comb
+    begin
         next_state = current_state;
-        case (current_state) 
-            IDLE: begin
-                if(valid_in)
-                    next_state = LOAD;
-                else
-                    next_state = IDLE;
+
+        case(current_state)
+            IDLE:
+            begin
+                if(!fifo_empty)
+                    next_state = READ_FIFO;
             end
-            LOAD: begin
+
+            READ_FIFO:
+            begin
                 next_state = SHIFT;
             end
-            SHIFT: begin
-                if(bit_count == 65)
-                    next_state = DONE;
-                else
-                    next_state = SHIFT;
+
+            SHIFT:
+            begin
+                if(bit_count == 7'd65)
+                    next_state = IDLE;
             end
-            DONE: begin
+
+            default:
                 next_state = IDLE;
-            end
-            default: begin
-                next_state = IDLE;
-            end
+
         endcase
+
     end
 
-    always_ff @(posedge clk or negedge rst_n) begin
-        
-        if(!rst_n) begin
+    // Datapath
+    always_ff @(posedge clk or negedge rst_n)
+    begin
+        if(!rst_n)
+        begin
+
+            fifo_rd_en   <= 1'b0;
+
             scrambled_bit <= 1'b0;
             valid_out     <= 1'b0;
-            ready         <= 1'b0;
-            shift_reg     <= '0;
-            sync_header   <= '0;
-            history_reg   <= '0;
-            bit_count     <= '0;
+
+            sync_header <= 0;
+            shift_reg   <= 0;
+            history_reg <= 0;
+
+            bit_count <= 0;
+
         end
 
-        else begin
-            case (current_state) 
-                IDLE: begin
-                    ready         <= 1'b1;
-                    scrambled_bit <= 1'b0;
-                    valid_out     <= 1'b0;
-                    bit_count     <= 7'd0;
+        else
+        begin
+            case(current_state)
+            // Wait for FIFO data
+            IDLE:
+            begin
+                fifo_rd_en <= 1'b0;
+                valid_out <= 1'b0;
+                scrambled_bit <= 1'b0;
+                bit_count <= 0;
+
+                if(!fifo_empty)
+                begin
+                    fifo_rd_en <= 1'b1;
                 end
 
-                LOAD : begin
-                    shift_reg     <= encoded_data[63:0];
-                    sync_header   <= encoded_data[65:64];
-                    ready         <= 1'b0;
-                    valid_out     <= 1'b0;
-                    bit_count     <= 7'd0;
+            end
+            // Load FIFO output
+
+            READ_FIFO:
+            begin
+                fifo_rd_en <= 1'b0;
+                sync_header <= fifo_data[65:64];
+                shift_reg <= fifo_data[63:0];
+                bit_count <= 0;
+            end
+
+            // Serial scrambling
+            SHIFT:
+            begin
+                fifo_rd_en <= 1'b0;
+                valid_out <= 1'b1;
+                // First two bits are sync header
+                if(bit_count == 0)
+                begin
+                    scrambled_bit <= sync_header[1];
+                end
+                else if(bit_count == 1)
+                begin
+                    scrambled_bit <= sync_header[0];
                 end
 
-                SHIFT: begin
-                    ready         <= 1'b0;
-                    valid_out     <= 1'b1;
-
-                    if(bit_count == 0)
-                        scrambled_bit <= sync_header[1];
-                    else if (bit_count == 1)
-                        scrambled_bit <= sync_header[0];
-                    else begin
+                // Scramble 64-bit payload
+                else
+                begin
                     scrambled_bit <= scramble_bit_next;
-                    history_reg   <= {history_reg[56:0], scramble_bit_next};
-                    shift_reg     <= {shift_reg[62:0], 1'b0};
-                    end
-                    bit_count     <= bit_count + 1;
-                end
 
-                DONE : begin
-                    ready         <= 1'b1;
-                    valid_out     <= 1'b0;
-                    scrambled_bit <= 1'b0;
-                    bit_count     <= '0;    
-                end
+                    history_reg <={history_reg[56:0], scramble_bit_next};
 
-                default : begin
-                    ready         <= 1'b0;
-                    valid_out     <= 1'b0;
-                    scrambled_bit <= 1'b0;
+                    shift_reg <={shift_reg[62:0], 1'b0};
+
                 end
+                bit_count <= bit_count + 1;
+            end
+            default:
+            begin
+                fifo_rd_en <= 0;
+                valid_out <= 0;
+            end
             endcase
         end
     end
 
 endmodule
-
-

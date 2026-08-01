@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module descrambler (
     input logic         clk,
     input logic         rst_n,
@@ -37,9 +39,10 @@ module descrambler (
                 case(bit_count)
                     0:  sync_header[1] <= scrambled_bit;
                     1:  sync_header[0] <= scrambled_bit;
-                    default:
+                    default: begin
                         history_reg <= {history_reg[56:0], scrambled_bit};
                         recovered_data[65-bit_count] <= descramble_bit;
+                    end
                 endcase
                 
                 if (bit_count == 65) begin
