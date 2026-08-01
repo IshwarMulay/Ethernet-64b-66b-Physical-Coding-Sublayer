@@ -268,6 +268,10 @@ always_comb begin
             payload = format_start(txd);
         BLK_TERMINATE:
             payload = format_terminate(txd, term_pos);
+            
+        // corrupted block-type bytes.
+        BLK_ERROR:
+            payload = {FAULT_BLOCK_TYPE, 56'h0};
         default:
             payload = 64'd0;
     endcase

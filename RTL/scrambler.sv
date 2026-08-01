@@ -49,6 +49,9 @@ module scrambler (
                 history_reg[57] ^
                 history_reg[38];
 
+
+    assign fifo_rd_en = (current_state == IDLE) && !fifo_empty;
+
     // State Register
     always_ff @(posedge clk or negedge rst_n)
     begin
@@ -94,7 +97,10 @@ module scrambler (
         if(!rst_n)
         begin
 
-            fifo_rd_en   <= 1'b0;
+            // fifo_rd_en no longer lives here -- it's now the
+            // combinational assign above, driven directly by
+            // current_state (which itself resets to IDLE), so it
+            // needs no explicit reset value of its own.
 
             scrambled_bit <= 1'b0;
             valid_out     <= 1'b0;
@@ -113,22 +119,16 @@ module scrambler (
             // Wait for FIFO data
             IDLE:
             begin
-                fifo_rd_en <= 1'b0;
                 valid_out <= 1'b0;
                 scrambled_bit <= 1'b0;
                 bit_count <= 0;
-
-                if(!fifo_empty)
-                begin
-                    fifo_rd_en <= 1'b1;
-                end
-
+                // fifo_rd_en request is now handled by the
+                // combinational assign above, not here.
             end
             // Load FIFO output
 
             READ_FIFO:
             begin
-                fifo_rd_en <= 1'b0;
                 sync_header <= fifo_data[65:64];
                 shift_reg <= fifo_data[63:0];
                 bit_count <= 0;
@@ -137,7 +137,6 @@ module scrambler (
             // Serial scrambling
             SHIFT:
             begin
-                fifo_rd_en <= 1'b0;
                 valid_out <= 1'b1;
                 // First two bits are sync header
                 if(bit_count == 0)
@@ -163,7 +162,6 @@ module scrambler (
             end
             default:
             begin
-                fifo_rd_en <= 0;
                 valid_out <= 0;
             end
             endcase

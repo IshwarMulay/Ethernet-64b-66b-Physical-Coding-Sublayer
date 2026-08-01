@@ -20,6 +20,15 @@ typedef enum logic [2:0] {
 } character_t;
 
 //---------------------------------------------------------
+typedef enum logic [2:0] {
+    DATA,
+    IDLE,
+    START,
+    TERMINATE,
+    FAULT
+} command_type_e;
+
+//---------------------------------------------------------
 // IEEE Block Type Constants
 //---------------------------------------------------------
 localparam logic [7:0] IDLE_BLOCK_TYPE   = 8'h1E;
@@ -35,7 +44,6 @@ localparam logic [7:0] TERM5_BLOCK_TYPE  = 8'hD2;
 localparam logic [7:0] TERM6_BLOCK_TYPE  = 8'hE1;
 localparam logic [7:0] TERM7_BLOCK_TYPE  = 8'hFF;
 
+localparam logic [7:0] FAULT_BLOCK_TYPE  = 8'h4B;
+
 endpackage
-
-
-

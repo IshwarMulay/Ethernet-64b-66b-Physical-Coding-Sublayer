@@ -143,7 +143,7 @@ module decoder (
                         end
 
                         // FAULT BLOCK
-                        FAULT_BLOCK:
+                        FAULT_BLOCK_TYPE:
                         begin
                             command_type       <= FAULT;
                             original_data      <= 64'd0;
