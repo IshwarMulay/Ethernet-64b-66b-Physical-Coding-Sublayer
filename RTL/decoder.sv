@@ -2,179 +2,217 @@
 
 import ethernet_pkg::*;
 
-module decoder (
+module decoder(
 
-    // Clock and Reset
-    input  logic           clk,
-    input  logic           rst_n,
+    input  logic         clk,
+    input  logic         rst_n,
 
-    // Input Interface (From Descrambler)
-    input  logic           valid_in,
-    input  logic [65:0]    descrambled_data,
+    input  logic         valid_in,
+    input  logic [65:0]  descrambled_data,
 
-    // Output Interface
-    output logic [63:0]    original_data,
-    output logic           valid_out,
-    output command_type_e  command_type,
-
-    // Terminate information
-    output logic [2:0]     terminate_position,
-
-    // Error indication
-    output logic           decode_error
+    output logic [63:0]  txd,
+    output logic [7:0]   txc,
+    output logic         valid_out,
+    output logic         decode_error
 );
 
-    // Decoder Logic
+logic [1:0] header;
+logic [7:0] block_type;
 
-    always_ff @(posedge clk or negedge rst_n) begin
+always_ff @(posedge clk or negedge rst_n) begin
 
-        if(!rst_n) begin
-            original_data       <= '0;
-            valid_out           <= 1'b0;
-            command_type        <= DATA;
-            terminate_position  <= 3'd0;
-            decode_error        <= 1'b0;
-        end
+    if(!rst_n) begin
 
-        else begin
+        txd          <= '0;
+        txc          <= '0;
+        valid_out    <= 0;
+        decode_error <= 0;
 
-            valid_out    <= 1'b0;
-            decode_error <= 1'b0;
-
-            if(valid_in) begin
-
-                // DATA BLOCK
-                if(descrambled_data[65:64] == 2'b01) begin
-
-                    command_type       <= DATA;
-                    original_data      <= descrambled_data[63:0];
-                    terminate_position <= 3'd0;
-                    valid_out          <= 1'b1;
-
-                end
-
-
-                // CONTROL BLOCK
-                else if(descrambled_data[65:64] == 2'b10) begin
-
-                    case(descrambled_data[63:56])
-
-                        // IDLE BLOCK
-                        IDLE_BLOCK_TYPE:
-                        begin
-                            command_type       <= IDLE;
-                            original_data      <= 64'd0;
-                            terminate_position <= 3'd0;
-                            valid_out          <= 1'b1;
-                        end
-
-                        // START BLOCK
-                        START_BLOCK_TYPE:
-                        begin
-                            command_type       <= START;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd0;
-                            valid_out          <= 1'b1;
-                        end
-
-                        // TERMINATE BLOCKS
-                        TERM0_BLOCK_TYPE:
-                        begin
-                            command_type       <= TERMINATE;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd0;
-                            valid_out          <= 1'b1;
-                        end
-
-                        TERM1_BLOCK_TYPE:
-                        begin
-                            command_type       <= TERMINATE;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd1;
-                            valid_out          <= 1'b1;
-                        end
-
-                        TERM2_BLOCK_TYPE:
-                        begin
-                            command_type       <= TERMINATE;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd2;
-                            valid_out          <= 1'b1;
-                        end
-
-                        TERM3_BLOCK_TYPE:
-                        begin
-                            command_type       <= TERMINATE;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd3;
-                            valid_out          <= 1'b1;
-                        end
-
-                        TERM4_BLOCK_TYPE:
-                        begin
-                            command_type       <= TERMINATE;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd4;
-                            valid_out          <= 1'b1;
-                        end
-
-                        TERM5_BLOCK_TYPE:
-                        begin
-                            command_type       <= TERMINATE;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd5;
-                            valid_out          <= 1'b1;
-                        end
-
-                        TERM6_BLOCK_TYPE:
-                        begin
-                            command_type       <= TERMINATE;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd6;
-                            valid_out          <= 1'b1;
-                        end
-
-                        TERM7_BLOCK_TYPE:
-                        begin
-                            command_type       <= TERMINATE;
-                            original_data      <= descrambled_data[55:0];
-                            terminate_position <= 3'd7;
-                            valid_out          <= 1'b1;
-                        end
-
-                        // FAULT BLOCK
-                        FAULT_BLOCK_TYPE:
-                        begin
-                            command_type       <= FAULT;
-                            original_data      <= 64'd0;
-                            terminate_position <= 3'd0;
-                            valid_out          <= 1'b1;
-                        end
-
-                        // UNKNOWN CONTROL BLOCK
-                        default:
-                        begin
-                            command_type       <= FAULT;
-                            original_data      <= 64'd0;
-                            terminate_position <= 3'd0;
-                            valid_out          <= 1'b1;
-                            decode_error       <= 1'b1;
-                        end
-                    endcase
-
-                end
-
-                // INVALID SYNC HEADER
-                else begin
-                    command_type       <= FAULT;
-                    original_data      <= 64'd0;
-                    terminate_position <= 3'd0;
-                    valid_out          <= 1'b1;
-                    decode_error       <= 1'b1;
-
-                end
-            end
-        end
     end
+
+    else begin
+
+        valid_out    <= 0;
+        decode_error <= 0;
+
+        if(valid_in) begin
+
+            header     = descrambled_data[65:64];
+            block_type = descrambled_data[63:56];
+
+            // DATA BLOCK
+            if(header == 2'b01) begin
+
+                txd       <= descrambled_data[63:0];
+                txc       <= 8'h00;
+                valid_out <= 1;
+
+            end
+
+            // CONTROL BLOCK
+            else if(header == 2'b10) begin
+
+                case(block_type)
+
+                    // IDLE
+                    IDLE_BLOCK_TYPE:
+                    begin
+                        txd <= {8{8'h07}};
+                        txc <= 8'hFF;
+                        valid_out <= 1;
+                    end
+
+                    // START
+                    START_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            descrambled_data[55:0]
+                            8'hFB
+                        };
+
+                        txc <= 8'b00000001;
+                        valid_out <= 1;
+                    end
+
+                    // TERM0
+                    TERM0_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            8'h07,8'h07,8'h07,8'h07,
+                            8'h07,8'h07,8'h07,8'hFD
+                        };
+
+                        txc <= 8'hFF;
+                        valid_out <= 1;
+                    end
+
+                    // TERM1
+                    TERM1_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            8'h07,8'h07,8'h07,
+                            8'h07,8'h07,8'h07,
+                            8'hFD,
+                            descrambled_data[55:48]
+                        };
+
+                        txc <= 8'b11111110;
+                        valid_out <= 1;
+                    end
+
+                    // TERM2
+                    TERM2_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            8'h07,8'h07,8'h07,
+                            8'h07,8'h07,
+                            8'hFD,
+                            descrambled_data[55:40]
+                        };
+
+                        txc <= 8'b11111100;
+                        valid_out <= 1;
+                    end
+
+                    // TERM3
+                    TERM3_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            8'h07,8'h07,8'h07,
+                            8'h07,
+                            8'hFD,
+                            descrambled_data[55:32]
+                        };
+
+                        txc <= 8'b11111000;
+                        valid_out <= 1;
+                    end
+
+                    // TERM4
+                    TERM4_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            8'h07,8'h07,8'h07,
+                            8'hFD,
+                            descrambled_data[55:24]
+                        };
+
+                        txc <= 8'b11110000;
+                        valid_out <= 1;
+                    end
+
+                    // TERM5
+                    TERM5_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            8'h07,8'h07,
+                            8'hFD,
+                            descrambled_data[55:16]
+                        };
+
+                        txc <= 8'b11100000;
+                        valid_out <= 1;
+                    end
+
+                    // TERM6
+                    TERM6_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            8'h07,
+                            8'hFD,
+                            descrambled_data[55:8]
+                        };
+
+                        txc <= 8'b11000000;
+                        valid_out <= 1;
+                    end
+
+                    // TERM7
+                    TERM7_BLOCK_TYPE:
+                    begin
+                        txd <= {
+                            8'hFD,
+                            descrambled_data[55:0]
+                        };
+
+                        txc <= 8'b10000000;
+                        valid_out <= 1;
+                    end
+
+                    // FAULT
+                    FAULT_BLOCK_TYPE:
+                    begin
+                        txd <= {8{8'hFE}};
+                        txc <= 8'hFF;
+                        valid_out <= 1;
+                    end
+
+                    // UNKNOWN
+                    default
+                    begin
+                        txd <= 64'd0;
+                        txc <= 8'd0;
+                        valid_out <= 1;
+                        decode_error <= 1;
+                    end
+
+                endcase
+
+            end
+
+            else begin
+
+                txd <= 64'd0;
+                txc <= 8'd0;
+                valid_out <= 1;
+                decode_error <= 1;
+
+            end
+
+        end
+
+    end
+
+end
 
 endmodule
