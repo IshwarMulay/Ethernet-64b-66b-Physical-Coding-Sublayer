@@ -1,2 +1,2 @@
-# Ethernet_64b66b
+# Ethernet_64b/66b_Physical_Coding_Sublayer
 
