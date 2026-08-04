@@ -2,7 +2,7 @@
 
 module sync_fifo #(
     parameter DATA_WIDTH = 66,
-    parameter DEPTH      = 8
+    parameter DEPTH      = 1000
 )
 (
     input  logic                    clk,

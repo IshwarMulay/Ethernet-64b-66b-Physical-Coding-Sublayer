@@ -1,67 +1,144 @@
+`timescale 1ns/1ps
+
 import ethernet_pkg::*;
 
-module top(
-    // Clock and Reset
-    input  logic           clk,         
-    input  logic           rst_n,  
+module top (
 
-    // Input Interface From Testbench
-    input  logic           valid_in,     
-    input  logic [63:0]    data_in,      
-    input  logic [2:0]     command_type_in, 
+    input  logic         clk,
+    input  logic         rst_n,
 
-    output logic [63:0]    original_data,
-    output command_type_e  command_type_out
+    //==========================
+    // XGMII Transmit Interface
+    //==========================
+    input  logic [63:0]  txd,
+    input  logic [7:0]   txc,
+    input  logic         valid_in,
+
+    //==========================
+    // XGMII Receive Interface
+    //==========================
+    output logic [63:0]  rxd,
+    output logic [7:0]   rxc,
+    output logic         valid_out,
+    output logic         decode_error
+
 );
 
-logic           scrambler_ready;
-logic           encoder_valid;
-logic [65:0]    encoded_data;
+    // Encoder -> FIFO
 
-logic           scrambled_bit;
-logic           scrambler_v_out;
+    logic [65:0] encoded_block;
+    logic        encoder_valid;
 
-logic           descrambler_v_out;
-logic [65:0]    descrambled_data;
+    // FIFO Signals
 
+    logic [65:0] fifo_dout;
 
-encoder dut_encoder(
-    .clk              (clk),
-    .rst_n            (rst_n),
-    .valid_in         (valid_in),
-    .data_in          (data_in),
-    .command_type     (command_type_in),
-    .ready            (scrambler_ready),
-    .valid_out        (encoder_valid),
-    .encoded_data     (encoded_data)
-);
+    logic fifo_full;
+    logic fifo_empty;
 
-scrambler dut_scrambler(
-    .clk              (clk),
-    .rst_n            (rst_n),
-    .valid_in         (encoder_valid),
-    .encoded_data     (encoded_data),
-    .scrambled_bit    (scrambled_bit),
-    .valid_out        (scrambler_v_out),
-    .ready            (scrambler_ready)
-);
+    logic fifo_wr_en;
+    logic fifo_rd_en;
 
-descrambler dut_descrambler(
-    .clk              (clk),
-    .rst_n            (rst_n),
-    .valid_in         (scrambler_v_out),
-    .scrambled_bit    (scrambled_bit), 
-    .valid_out        (descrambler_v_out),
-    .descrambled_data (descrambled_data)  
-);
+    // Scrambler
 
-decoder dut_decoder(
-    .clk              (clk),
-    .rst_n            (rst_n),
-    .valid_in         (descrambler_v_out),
-    .descrambled_data (descrambled_data),
-    .original_data    (original_data),
-    .command_type     (command_type_out)
-);
+    logic serial_bit;
+    logic scr_valid;
+
+    // Descrambler
+
+    logic [65:0] descrambled_block;
+    logic        descr_valid;
+
+    // FIFO Control
+    assign fifo_wr_en = encoder_valid & !fifo_full;
+
+    // Encoder
+    encoder u_encoder (
+
+        .clk            (clk),
+        .rst_n          (rst_n),
+
+        .txd            (txd),
+        .txc            (txc),
+
+        .valid_in       (valid_in),
+
+        // Encoder should only accept when FIFO has space
+        .ready_in       (!fifo_full),
+
+        .encoded_block  (encoded_block),
+        .valid_out      (encoder_valid)
+
+    );
+
+    // FIFO
+
+    sync_fifo #(
+
+        .DATA_WIDTH (66),
+        .DEPTH      (1000)
+
+    ) u_fifo (
+
+        .clk        (clk),
+        .rst_n      (rst_n),
+
+        .wr_en      (fifo_wr_en),
+        .data_in    (encoded_block),
+        .full       (fifo_full),
+
+        .rd_en      (fifo_rd_en),
+        .data_out   (fifo_dout),
+        .empty      (fifo_empty)
+
+    );
+
+    // Scrambler
+
+    scrambler u_scrambler (
+
+        .clk            (clk),
+        .rst_n          (rst_n),
+
+        .fifo_data      (fifo_dout),
+        .fifo_empty     (fifo_empty),
+        .fifo_rd_en     (fifo_rd_en),
+
+        .scrambled_bit  (serial_bit),
+        .valid_out      (scr_valid)
+
+    );
+
+    // Descrambler
+
+    descrambler u_descrambler (
+
+        .clk                (clk),
+        .rst_n              (rst_n),
+
+        .valid_in           (scr_valid),
+        .scrambled_bit      (serial_bit),
+
+        .valid_out          (descr_valid),
+        .descrambled_data   (descrambled_block)
+
+    );
+
+    // Decoder
+
+    decoder u_decoder (
+
+        .clk                (clk),
+        .rst_n              (rst_n),
+
+        .valid_in           (descr_valid),
+        .descrambled_data   (descrambled_block),
+
+        .rxd                (rxd),
+        .rxc                (rxc),
+        .valid_out          (valid_out),
+        .decode_error       (decode_error)
+
+    );
 
 endmodule
