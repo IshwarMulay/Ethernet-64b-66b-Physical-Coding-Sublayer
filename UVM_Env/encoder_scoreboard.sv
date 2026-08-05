@@ -3,7 +3,6 @@
 import uvm_pkg::*;
 import ethernet_pkg::*;
 
-
 `uvm_analysis_imp_decl(_expected)
 `uvm_analysis_imp_decl(_actual)
 
@@ -424,15 +423,15 @@ class encoder_scoreboard extends uvm_scoreboard;
 
             $sformatf(
 
-            "Encoder Mismatch
+            "\nEncoder Mismatch"
 
-             \nTXD      = %016h
+            "\nTXD      = %016h"
 
-             \nTXC      = %02h
+            "\nTXC      = %02h"
 
-             \nExpected = %017h
+            "\nExpected = %017h"
 
-             \nActual   = %017h",
+            "\nActual   = %017h",
 
             exp_tr.txd,
 

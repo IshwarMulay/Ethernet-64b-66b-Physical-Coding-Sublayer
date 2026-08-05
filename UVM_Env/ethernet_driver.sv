@@ -52,6 +52,8 @@ class ethernet_driver extends uvm_driver #(ethernet_transaction);
         vif.drv_cb.txd      <= '0;
         vif.drv_cb.txc      <= '0;
 
+        @(posedge vif.rst_n);
+
         forever begin
 
             // Get transaction from sequencer
@@ -82,7 +84,7 @@ class ethernet_driver extends uvm_driver #(ethernet_transaction);
                           req_tr.txd,
                           req_tr.txc,
                           req_tr.valid_in),
-                UVM_MEDIUM)
+                UVM_LOW)
 
             //-------------------------------------------------
             // De-assert valid after one clock
