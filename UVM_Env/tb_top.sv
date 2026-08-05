@@ -1,6 +1,21 @@
 `timescale 1ns/1ps
 
 `include "uvm_macros.svh"
+
+// Interface
+`include "ethernet_if.sv"
+
+// Transaction
+`include "ethernet_transaction.sv"
+`include "ethernet_sequence.sv"
+`include "ethernet_sequencer.sv"
+`include "ethernet_driver.sv"
+`include "encoder_monitor.sv"
+`include "encoder_scoreboard.sv"
+`include "ethernet_agent.sv"
+`include "ethernet_env.sv"
+`include "ethernet_test.sv"
+
 import uvm_pkg::*;
 import ethernet_pkg::*;
 
@@ -11,15 +26,17 @@ module tb_top;
 
     // DUT Instantiation
     top dut (
-        .clk               (vif.clk),
-        .rst_n             (vif.rst_n),
-        .valid_in          (vif.valid_in),
-        .data_in           (vif.data_in),
-        .command_type      (vif.command_type_in),
+        .clk           (vif.clk),
+        .rst_n         (vif.rst_n),
 
-        .original_data     (vif.original_data),
-        .valid_out         (vif.valid_out),
-        .command_type      (vif.command_type_out)
+        .txd           (vif.txd),
+        .txc           (vif.txc),
+        .valid_in      (vif.valid_in),
+
+        .rxd           (vif.rxd),
+        .rxc           (vif.rxc),
+        .valid_out     (vif.valid_out),
+        .decode_error  (vif.decode_error)
     );
 
     // Clock Generation

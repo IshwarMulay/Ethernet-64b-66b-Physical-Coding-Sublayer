@@ -130,8 +130,8 @@ module scrambler (
             READ_FIFO:
             begin
                 sync_header <= fifo_data[65:64];
-                shift_reg <= fifo_data[63:0];
-                bit_count <= 0;
+                shift_reg   <= fifo_data[63:0];
+                bit_count   <= 0;
             end
 
             // Serial scrambling

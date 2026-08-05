@@ -51,7 +51,7 @@ module top (
 
     // FIFO Control
     assign fifo_wr_en = encoder_valid & !fifo_full;
-
+    
     // Encoder
     encoder u_encoder (
 

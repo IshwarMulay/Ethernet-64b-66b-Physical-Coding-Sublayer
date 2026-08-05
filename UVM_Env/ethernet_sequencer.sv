@@ -2,6 +2,7 @@
 import uvm_pkg::*;
 import ethernet_pkg::*;
 
+
 class ethernet_sequencer extends uvm_sequencer #(ethernet_transaction);
 
     //Factory Registration

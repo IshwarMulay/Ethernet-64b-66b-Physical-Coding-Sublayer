@@ -2,6 +2,7 @@
 import uvm_pkg::*;
 import ethernet_pkg::*;
 
+
 // Create two different analysis implementations
 `uvm_analysis_imp_decl(_expected)
 `uvm_analysis_imp_decl(_actual)
