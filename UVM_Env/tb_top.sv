@@ -36,7 +36,12 @@ module tb_top;
         .rxd           (vif.rxd),
         .rxc           (vif.rxc),
         .valid_out     (vif.valid_out),
-        .decode_error  (vif.decode_error)
+        .decode_error  (vif.decode_error),
+
+        .encoded_data      (vif.encoded_data),
+        .encode_valid      (vif.encoder_valid),
+        .descrambled_data  (vif.descrambled_data),
+        .descrambler_valid (vif.descrambler_valid)
     );
 
     // Clock Generation

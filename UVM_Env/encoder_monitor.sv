@@ -46,7 +46,7 @@ class encoder_monitor extends uvm_monitor;
 
             @(vif.mon_cb);
 
-            if(tb_top.dut.encoder_valid) begin
+            if(vif.encoder_valid) begin
 
                 // Create Transaction
                 mon_tr = ethernet_transaction::type_id::create("mon_tr");
@@ -59,8 +59,8 @@ class encoder_monitor extends uvm_monitor;
 
 
                 // Sample Encoder Output
-                mon_tr.encoded_data  = tb_top.dut.encoded_block;
-                mon_tr.encoder_valid = tb_top.dut.encoder_valid;
+                mon_tr.encoded_data  = vif.encoded_data;
+                mon_tr.encoder_valid = vif.encoder_valid;
 
 
                 // Generate Expected Encoded Block

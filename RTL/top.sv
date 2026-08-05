@@ -20,7 +20,13 @@ module top (
     output logic [63:0]  rxd,
     output logic [7:0]   rxc,
     output logic         valid_out,
-    output logic         decode_error
+    output logic         decode_error,
+
+    //internal sequence
+    output logic [65:0] encoded_data,
+    output logic        encode_valid,
+    output logic [65:0] descrambled_data,
+    output logic        descrambler_valid
 
 );
 
@@ -51,6 +57,11 @@ module top (
 
     // FIFO Control
     assign fifo_wr_en = encoder_valid & !fifo_full;
+
+    assign encoded_data      = encoded_block;
+    assign encode_valid      = encoder_valid;
+    assign descrambled_data  = descrambled_block;
+    assign descrambler_valid = descr_valid;
     
     // Encoder
     encoder u_encoder (
