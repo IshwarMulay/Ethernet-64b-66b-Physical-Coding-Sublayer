@@ -13,6 +13,8 @@ class decoder_monitor extends uvm_monitor;
 
     ethernet_transaction mon_tr;
 
+    int received_packets = 0;
+
 
     function new(string name = "decoder_monitor",
                  uvm_component parent = null);
@@ -46,6 +48,8 @@ class decoder_monitor extends uvm_monitor;
 
             // Decoder has produced one complete output block
             if(vif.mon_cb.valid_out || vif.mon_cb.decode_error) begin
+
+                received_packets++;
 
                 mon_tr = ethernet_transaction::type_id::create("mon_tr");
 

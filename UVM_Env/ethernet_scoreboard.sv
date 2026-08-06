@@ -20,6 +20,8 @@ class ethernet_scoreboard extends uvm_scoreboard;
     // Expected Transaction Queue
     ethernet_transaction expected_queue[$];
 
+    packet_result_t results[$];
+
     // Statistics
     int total_packets;
     int pass_count;
@@ -72,6 +74,9 @@ class ethernet_scoreboard extends uvm_scoreboard;
     function void write_actual(ethernet_transaction tr);
 
         ethernet_transaction exp_tr;
+                
+        //for final output table
+        packet_result_t result;
 
         // Queue Empty Check
         if(expected_queue.size() == 0) begin
@@ -88,6 +93,15 @@ class ethernet_scoreboard extends uvm_scoreboard;
 
         total_packets++;
 
+        //for final output table
+        result.packet_no    = total_packets;
+        result.txd          = exp_tr.txd;
+        result.txc          = exp_tr.txc;
+        result.rxd          = tr.rxd;
+        result.rxc          = tr.rxc;
+        result.valid_out    = tr.valid_out;
+        result.decode_error = tr.decode_error;
+
         // Compare Expected vs Actual
         if((exp_tr.txd == tr.rxd) &&
            (exp_tr.txc == tr.rxc) &&
@@ -95,6 +109,9 @@ class ethernet_scoreboard extends uvm_scoreboard;
         begin
 
             pass_count++;
+
+            result.status = "PASS";
+            results.push_back(result);
 
             `uvm_info(get_type_name(),
 
@@ -109,6 +126,8 @@ class ethernet_scoreboard extends uvm_scoreboard;
         else begin
 
             fail_count++;
+            result.status = "FAIL";
+            results.push_back(result);
 
             `uvm_error(get_type_name(),
 
@@ -129,25 +148,48 @@ class ethernet_scoreboard extends uvm_scoreboard;
     //==========================================================
     function void report_phase(uvm_phase phase);
 
+        string report;
+
         super.report_phase(phase);
 
-        `uvm_info(get_type_name(),
+        report = "\n";
+        report = {report,
+    "==============================================================================================================\n"};
 
-            $sformatf(
+        report = {report,
+        "No.   TXD                  TXC      RXD                  RXC      VALID      ERROR      STATUS\n"};
 
-            "\n========================================\
-             \n      ETHERNET SCOREBOARD SUMMARY\
-             \n========================================\
-             \nTotal Packets : %0d\
-             \nPassed        : %0d\
-             \nFailed        : %0d\
-             \n========================================",
+        report = {report,
+    "==============================================================================================================\n"};
 
-             total_packets,
-             pass_count,
-             fail_count),
+        foreach(results[i]) begin
+            report = {report,
+                $sformatf("%-5d %-20h %-8h %-20h %-8h %-10b %-10b %-10s\n",
+                    results[i].packet_no,
+                    results[i].txd,
+                    results[i].txc,
+                    results[i].rxd,
+                    results[i].rxc,
+                    results[i].valid_out,
+                    results[i].decode_error,
+                    results[i].status)
+            };
+        end
 
-             UVM_NONE)
+        report = {report,
+    "==============================================================================================================\n"};
+
+        report = {report,
+            $sformatf("Summary : Total=%0d  Pass=%0d  Fail=%0d\n",
+                total_packets,
+                pass_count,
+                fail_count)
+        };
+
+        report = {report,
+    "=============================================================================================================="};
+
+        `uvm_info(get_type_name(), report, UVM_NONE)
 
     endfunction
 

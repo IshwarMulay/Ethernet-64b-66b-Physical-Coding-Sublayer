@@ -9,6 +9,8 @@ class encoder_monitor extends uvm_monitor;
 
     virtual ethernet_if vif;
 
+    int expected_packets = 0;
+
     uvm_analysis_port #(ethernet_transaction) analysis_port;
 
     ethernet_transaction mon_tr;
@@ -119,7 +121,8 @@ endfunction
             @(vif.mon_cb);
 
             if(vif.encoder_valid) begin
-
+                
+                expected_packets++;
                 // Create Transaction
                 mon_tr = ethernet_transaction::type_id::create("mon_tr");
 

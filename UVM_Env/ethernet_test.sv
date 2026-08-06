@@ -70,7 +70,10 @@ class ethernet_test extends uvm_test;
         invalid_seq = invalid_sequence::type_id::create("invalid_seq");
         invalid_seq.start(env.agent.sequencer);
 
-        repeat(20)
+        wait(env.agent.dec_mon.received_packets ==
+            env.agent.enc_mon.expected_packets);
+
+        repeat(10)
             @(posedge env.agent.driver.vif.clk);
 
         phase.drop_objection(this);

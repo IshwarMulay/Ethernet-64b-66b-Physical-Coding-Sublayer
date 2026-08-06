@@ -46,4 +46,24 @@ localparam logic [7:0] TERM7_BLOCK_TYPE  = 8'hFF;
 
 localparam logic [7:0] FAULT_BLOCK_TYPE  = 8'h4B;
 
+
+typedef struct {
+
+    int packet_no;
+
+    logic [63:0] txd;
+    logic [7:0]  txc;
+
+    logic [63:0] rxd;
+    logic [7:0]  rxc;
+
+    bit valid_out;
+    bit decode_error;
+
+    string status;
+
+} packet_result_t;
+
+
+
 endpackage
