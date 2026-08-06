@@ -51,11 +51,6 @@ module top (
 
     // FIFO Control
     assign fifo_wr_en = encoder_valid & !fifo_full;
-
-    assign encoded_data      = encoded_block;
-    assign encode_valid      = encoder_valid;
-    assign descrambled_data  = descrambled_block;
-    assign descrambler_valid = descr_valid;
     
     // Encoder
     encoder u_encoder (
