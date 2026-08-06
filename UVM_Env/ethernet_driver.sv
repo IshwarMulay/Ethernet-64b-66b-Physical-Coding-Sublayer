@@ -80,7 +80,7 @@ class ethernet_driver extends uvm_driver #(ethernet_transaction);
             // Print Transaction
             //-------------------------------------------------
             `uvm_info(get_type_name(),
-                $sformatf("DRIVE : TXD = %016h  TXC = %02h  VALID = %0b",
+                $sformatf("DRIVE : \nTXD = %016h  TXC = %02h  VALID = %0b",
                           req_tr.txd,
                           req_tr.txc,
                           req_tr.valid_in),

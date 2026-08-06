@@ -6,12 +6,14 @@
 `include "ethernet_if.sv"
 
 // Transaction
-`include "encoder_reference_model.sv"
 `include "ethernet_transaction.sv"
 `include "ethernet_sequence.sv"
 `include "ethernet_sequencer.sv"
 `include "ethernet_driver.sv"
 `include "encoder_monitor.sv"
+`include "scr_descr_monitor.sv"
+`include "decoder_monitor.sv"
+`include "ethernet_scoreboard.sv"
 `include "ethernet_agent.sv"
 `include "ethernet_env.sv"
 `include "ethernet_test.sv"
