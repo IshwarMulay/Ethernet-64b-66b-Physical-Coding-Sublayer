@@ -65,5 +65,30 @@ typedef struct {
 } packet_result_t;
 
 
+typedef struct {
+
+    int          packet_no;
+    logic [63:0] txd;
+    logic [7:0]  txc;
+    logic [1:0] sync_head;
+
+    logic [65:0] expected_block;
+    logic [65:0] actual_block;
+
+    string       status;
+
+} enc_result_t;
+
+
+typedef struct {
+
+    int          packet_no;
+
+    logic [65:0] encoder_block;
+    logic [65:0] descrambled_block;
+
+    string       status;
+
+} scr_descr_result_t;
 
 endpackage

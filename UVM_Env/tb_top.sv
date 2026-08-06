@@ -38,13 +38,13 @@ module tb_top;
         .rxd           (vif.rxd),
         .rxc           (vif.rxc),
         .valid_out     (vif.valid_out),
-        .decode_error  (vif.decode_error),
-
-        .encoded_data      (vif.encoded_data),
-        .encode_valid      (vif.encoder_valid),
-        .descrambled_data  (vif.descrambled_data),
-        .descrambler_valid (vif.descrambler_valid)
+        .decode_error  (vif.decode_error)
     );
+
+    assign vif.encoded_data      = dut.encoded_block;
+    assign vif.encoder_valid     = dut.encoder_valid;
+    assign vif.descrambled_data  = dut.descrambled_block;
+    assign vif.descrambler_valid = dut.descr_valid;
 
     // Clock Generation
     initial begin

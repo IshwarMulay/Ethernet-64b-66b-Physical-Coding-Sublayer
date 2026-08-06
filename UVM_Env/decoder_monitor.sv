@@ -59,15 +59,15 @@ class decoder_monitor extends uvm_monitor;
                 mon_tr.valid_out    = vif.mon_cb.valid_out;
                 mon_tr.decode_error = vif.mon_cb.decode_error;
 
-                `uvm_info(get_type_name(),
+                // `uvm_info(get_type_name(),
 
-                $sformatf("DECODER : \nRXD=%016h RXC=%02h VALID=%0b ERROR=%0b",
-                        mon_tr.rxd,
-                        mon_tr.rxc,
-                        mon_tr.valid_out,
-                        mon_tr.decode_error),
+                // $sformatf("DECODER : \nRXD=%016h RXC=%02h VALID=%0b ERROR=%0b",
+                //         mon_tr.rxd,
+                //         mon_tr.rxc,
+                //         mon_tr.valid_out,
+                //         mon_tr.decode_error),
 
-                UVM_LOW)
+                // UVM_LOW)
 
                 analysis_port.write(mon_tr);
 

@@ -20,13 +20,7 @@ module top (
     output logic [63:0]  rxd,
     output logic [7:0]   rxc,
     output logic         valid_out,
-    output logic         decode_error,
-
-    //internal sequence
-    output logic [65:0] encoded_data,
-    output logic        encode_valid,
-    output logic [65:0] descrambled_data,
-    output logic        descrambler_valid
+    output logic         decode_error
 
 );
 

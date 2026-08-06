@@ -11,6 +11,14 @@ class encoder_monitor extends uvm_monitor;
 
     int expected_packets = 0;
 
+    enc_result_t results[$];
+
+    enc_result_t result;
+
+    int total_packets;
+    int pass_count;
+    int fail_count;
+
     uvm_analysis_port #(ethernet_transaction) analysis_port;
 
     ethernet_transaction mon_tr;
@@ -120,7 +128,7 @@ endfunction
 
             @(vif.mon_cb);
 
-            if(vif.encoder_valid) begin
+            if(vif.mon_cb.encoder_valid) begin
                 
                 expected_packets++;
                 // Create Transaction
@@ -145,9 +153,20 @@ endfunction
                                 mon_tr.txc
                     );
 
+                //for report generation
+                result.packet_no      = ++total_packets;
+                result.txd            = mon_tr.txd;
+                result.txc            = mon_tr.txc;
+                result.sync_head      = mon_tr.encoded_data[65:64];
+                result.expected_block = expected_block;
+                result.actual_block   = mon_tr.encoded_data;
+
 
                 // Compare Expected vs Actual
                 if(expected_block == mon_tr.encoded_data) begin
+
+                pass_count++;
+                result.status = "PASS";
                 `uvm_info(get_type_name(),
 
                 $sformatf(
@@ -163,6 +182,8 @@ endfunction
                 end
 
                 else begin
+                fail_count++;
+                result.status = "FAIL";
                 `uvm_error(get_type_name(),
 
                 $sformatf(
@@ -175,10 +196,60 @@ endfunction
 
                 end
 
+                results.push_back(result);
+
             end
 
         end
 
     endtask
+
+    function void report_phase(uvm_phase phase);
+
+        string report;
+
+        report = "\n";
+        report = {report,
+    "============================================================================================\n"};
+
+        report = {report,
+    "No.  TXD                  TXC   HDR   Expected Block      Actual Block        Status\n"};
+
+        report = {report,
+    "============================================================================================\n"};
+
+        foreach(results[i]) begin
+
+            report = {report,
+
+            $sformatf("%-4d %-20h %-4h \t%b %-20h %-20h %-10s\n",
+
+            results[i].packet_no,
+            results[i].txd,
+            results[i].txc,
+            results[i].sync_head,
+            results[i].expected_block,
+            results[i].actual_block,
+            results[i].status)};
+
+        end
+
+        report = {report,
+    "============================================================================================\n"};
+
+        report = {report,
+
+            $sformatf("Total : %0d    Pass : %0d    Fail : %0d\n",
+
+            total_packets,
+            pass_count,
+            fail_count)};
+
+        report = {report,
+    "============================================================================================"};
+
+        `uvm_info(get_type_name(), report, UVM_NONE)
+
+    endfunction
 
 endclass

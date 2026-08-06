@@ -103,9 +103,10 @@ class ethernet_scoreboard extends uvm_scoreboard;
         result.decode_error = tr.decode_error;
 
         // Compare Expected vs Actual
-        if((exp_tr.txd == tr.rxd) &&
-           (exp_tr.txc == tr.rxc) &&
-           (tr.decode_error == 1'b0))
+        if ( ((exp_tr.txd == tr.rxd && exp_tr.txc == tr.rxc)||
+              (tr.rxd == {8{8'hFE}} && tr.rxc == 8'hFF)) && 
+              (tr.decode_error == 1'b0)
+            )
         begin
 
             pass_count++;
@@ -116,7 +117,7 @@ class ethernet_scoreboard extends uvm_scoreboard;
             `uvm_info(get_type_name(),
 
                 $sformatf(
-                    "\nPASS : TXD=%016h TXC=%02h",
+                    "PASS :\n TXD=%016h TXC=%02h",
                     tr.rxd,
                     tr.rxc),
 

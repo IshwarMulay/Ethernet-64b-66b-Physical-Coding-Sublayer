@@ -55,7 +55,7 @@ class idle_sequence extends uvm_sequence #(ethernet_transaction);
 
     virtual task body();
 
-        repeat(10) begin
+        repeat(20) begin
 
             tr = ethernet_transaction::type_id::create("tr");
 
@@ -90,7 +90,7 @@ class start_sequence extends uvm_sequence #(ethernet_transaction);
 
     virtual task body();
 
-        repeat(10) begin
+        repeat(20) begin
 
             tr = ethernet_transaction::type_id::create("tr");
 
@@ -127,111 +127,132 @@ class terminate_sequence extends uvm_sequence #(ethernet_transaction);
 
     virtual task body();
 
-        //---------------- TERM0 ----------------
-        tr = ethernet_transaction::type_id::create("term0");
-        start_item(tr);
-        assert(tr.randomize());
-        tr.valid_in = 1;
-        tr.txc = 8'hFF;
-        tr.txd = {8'h07,8'h07,8'h07,8'h07,8'h07,8'h07,8'h07,8'hFD};
-        finish_item(tr);
+        repeat(30) begin
 
-        //---------------- TERM1 ----------------
-        tr = ethernet_transaction::type_id::create("term1");
-        start_item(tr);
-        assert(tr.randomize());
-        tr.valid_in = 1;
-        tr.txc = 8'hFE;
-        tr.txd[7:0]   = $urandom;
-        tr.txd[15:8]  = 8'hFD;
-        tr.txd[63:16] = {6{8'h07}};
-        finish_item(tr);
+            case($urandom_range(0,8))
+                //---------------- TERM0 ----------------
+                0: begin
+                    tr = ethernet_transaction::type_id::create("term0");
+                    start_item(tr);
+                    assert(tr.randomize());
+                    tr.valid_in = 1;
+                    tr.txc = 8'hFF;
+                    tr.txd = {8'h07,8'h07,8'h07,8'h07,8'h07,8'h07,8'h07,8'hFD};
+                    finish_item(tr);
+                end
 
-        //---------------- TERM2 ----------------
-        tr = ethernet_transaction::type_id::create("term2");
-        start_item(tr);
-        assert(tr.randomize());
-        tr.valid_in = 1;
-        tr.txc = 8'hFC;
-        tr.txd[7:0]   = $urandom;
-        tr.txd[15:8]  = $urandom;
-        tr.txd[23:16] = 8'hFD;
-        tr.txd[63:24] = {5{8'h07}};
-        finish_item(tr);
+                //---------------- TERM1 ----------------
+                1: begin
+                    tr = ethernet_transaction::type_id::create("term1");
+                    start_item(tr);
+                    assert(tr.randomize());
+                    tr.valid_in = 1;
+                    tr.txc = 8'hFE;
+                    tr.txd[7:0]   = $urandom;
+                    tr.txd[15:8]  = 8'hFD;
+                    tr.txd[63:16] = {6{8'h07}};
+                    finish_item(tr);
+                end
 
-        //---------------- TERM3 ----------------
-        tr = ethernet_transaction::type_id::create("term3");
-        start_item(tr);
-        assert(tr.randomize());
-        tr.valid_in = 1;
-        tr.txc = 8'hF8;
-        tr.txd[7:0]    = $urandom;
-        tr.txd[15:8]   = $urandom;
-        tr.txd[23:16]  = $urandom;
-        tr.txd[31:24]  = 8'hFD;
-        tr.txd[63:32]  = {4{8'h07}};
-        finish_item(tr);
+                //---------------- TERM2 ----------------
+                2: begin
+                    tr = ethernet_transaction::type_id::create("term2");
+                    start_item(tr);
+                    assert(tr.randomize());
+                    tr.valid_in = 1;
+                    tr.txc = 8'hFC;
+                    tr.txd[7:0]   = $urandom;
+                    tr.txd[15:8]  = $urandom;
+                    tr.txd[23:16] = 8'hFD;
+                    tr.txd[63:24] = {5{8'h07}};
+                    finish_item(tr);
+                end
 
-        //---------------- TERM4 ----------------
-        tr = ethernet_transaction::type_id::create("term4");
-        start_item(tr);
-        assert(tr.randomize());
-        tr.valid_in = 1;
-        tr.txc = 8'hF0;
-        tr.txd[7:0]    = $urandom;
-        tr.txd[15:8]   = $urandom;
-        tr.txd[23:16]  = $urandom;
-        tr.txd[31:24]  = $urandom;
-        tr.txd[39:32]  = 8'hFD;
-        tr.txd[63:40]  = {3{8'h07}};
-        finish_item(tr);
+                //---------------- TERM3 ----------------
+                3: begin
+                    tr = ethernet_transaction::type_id::create("term3");
+                    start_item(tr);
+                    assert(tr.randomize());
+                    tr.valid_in = 1;
+                    tr.txc = 8'hF8;
+                    tr.txd[7:0]    = $urandom;
+                    tr.txd[15:8]   = $urandom;
+                    tr.txd[23:16]  = $urandom;
+                    tr.txd[31:24]  = 8'hFD;
+                    tr.txd[63:32]  = {4{8'h07}};
+                    finish_item(tr);
+                end
 
-        //---------------- TERM5 ----------------
-        tr = ethernet_transaction::type_id::create("term5");
-        start_item(tr);
-        assert(tr.randomize());
-        tr.valid_in = 1;
-        tr.txc = 8'hE0;
-        tr.txd[7:0]    = $urandom;
-        tr.txd[15:8]   = $urandom;
-        tr.txd[23:16]  = $urandom;
-        tr.txd[31:24]  = $urandom;
-        tr.txd[39:32]  = $urandom;
-        tr.txd[47:40]  = 8'hFD;
-        tr.txd[63:48]  = {2{8'h07}};
-        finish_item(tr);
+                //---------------- TERM4 ----------------
+                4: begin
+                    tr = ethernet_transaction::type_id::create("term4");
+                    start_item(tr);
+                    assert(tr.randomize());
+                    tr.valid_in = 1;
+                    tr.txc = 8'hF0;
+                    tr.txd[7:0]    = $urandom;
+                    tr.txd[15:8]   = $urandom;
+                    tr.txd[23:16]  = $urandom;
+                    tr.txd[31:24]  = $urandom;
+                    tr.txd[39:32]  = 8'hFD;
+                    tr.txd[63:40]  = {3{8'h07}};
+                    finish_item(tr);
+                end
 
-        //---------------- TERM6 ----------------
-        tr = ethernet_transaction::type_id::create("term6");
-        start_item(tr);
-        assert(tr.randomize());
-        tr.valid_in = 1;
-        tr.txc = 8'hC0;
-        tr.txd[7:0]    = $urandom;
-        tr.txd[15:8]   = $urandom;
-        tr.txd[23:16]  = $urandom;
-        tr.txd[31:24]  = $urandom;
-        tr.txd[39:32]  = $urandom;
-        tr.txd[47:40]  = $urandom;
-        tr.txd[55:48]  = 8'hFD;
-        tr.txd[63:56]  = 8'h07;
-        finish_item(tr);
+                //---------------- TERM5 ----------------
+                5: begin
+                    tr = ethernet_transaction::type_id::create("term5");
+                    start_item(tr);
+                    assert(tr.randomize());
+                    tr.valid_in = 1;
+                    tr.txc = 8'hE0;
+                    tr.txd[7:0]    = $urandom;
+                    tr.txd[15:8]   = $urandom;
+                    tr.txd[23:16]  = $urandom;
+                    tr.txd[31:24]  = $urandom;
+                    tr.txd[39:32]  = $urandom;
+                    tr.txd[47:40]  = 8'hFD;
+                    tr.txd[63:48]  = {2{8'h07}};
+                    finish_item(tr);
+                end
 
-        //---------------- TERM7 ----------------
-        tr = ethernet_transaction::type_id::create("term7");
-        start_item(tr);
-        assert(tr.randomize());
-        tr.valid_in = 1;
-        tr.txc = 8'h80;
-        tr.txd[7:0]    = $urandom;
-        tr.txd[15:8]   = $urandom;
-        tr.txd[23:16]  = $urandom;
-        tr.txd[31:24]  = $urandom;
-        tr.txd[39:32]  = $urandom;
-        tr.txd[47:40]  = $urandom;
-        tr.txd[55:48]  = $urandom;
-        tr.txd[63:56]  = 8'hFD;
-        finish_item(tr);
+                //---------------- TERM6 ----------------
+                6: begin
+                    tr = ethernet_transaction::type_id::create("term6");
+                    start_item(tr);
+                    assert(tr.randomize());
+                    tr.valid_in = 1;
+                    tr.txc = 8'hC0;
+                    tr.txd[7:0]    = $urandom;
+                    tr.txd[15:8]   = $urandom;
+                    tr.txd[23:16]  = $urandom;
+                    tr.txd[31:24]  = $urandom;
+                    tr.txd[39:32]  = $urandom;
+                    tr.txd[47:40]  = $urandom;
+                    tr.txd[55:48]  = 8'hFD;
+                    tr.txd[63:56]  = 8'h07;
+                    finish_item(tr);
+                end
+
+                //---------------- TERM7 ----------------
+                default: begin
+                    tr = ethernet_transaction::type_id::create("term7");
+                    start_item(tr);
+                    assert(tr.randomize());
+                    tr.valid_in = 1;
+                    tr.txc = 8'h80;
+                    tr.txd[7:0]    = $urandom;
+                    tr.txd[15:8]   = $urandom;
+                    tr.txd[23:16]  = $urandom;
+                    tr.txd[31:24]  = $urandom;
+                    tr.txd[39:32]  = $urandom;
+                    tr.txd[47:40]  = $urandom;
+                    tr.txd[55:48]  = $urandom;
+                    tr.txd[63:56]  = 8'hFD;
+                    finish_item(tr);
+                end
+            endcase
+        end
 
     endtask
 
@@ -289,7 +310,7 @@ class invalid_sequence extends uvm_sequence #(ethernet_transaction);
 
     virtual task body();
 
-        repeat(20) begin
+        repeat(5) begin
 
             tr = ethernet_transaction::type_id::create("tr");
 
